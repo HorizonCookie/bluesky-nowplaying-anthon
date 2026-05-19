@@ -41,3 +41,4 @@ jobs:
             git commit -m "Update last played track" || exit 0
             git push
           fi
+# activate scheduler
