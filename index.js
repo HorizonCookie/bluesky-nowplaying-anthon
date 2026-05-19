@@ -17,8 +17,6 @@ async function getCurrentTrack() {
   const response = await fetch(url);
   const data = await response.json();
 
-  console.log(JSON.stringify(data, null, 2));
-
   if (!data.recenttracks || !data.recenttracks.track) {
     console.log('Last.fm API error.');
     return null;
@@ -48,7 +46,7 @@ function saveLastPostedTrack(track) {
   fs.writeFileSync(LAST_TRACK_FILE, track);
 }
 
-async function postToBluesky(text) {
+async function postToBluesky(postData) {
   console.log('Logging into Bluesky...');
 
   const agent = new BskyAgent({
@@ -62,9 +60,7 @@ async function postToBluesky(text) {
 
   console.log('Posting to Bluesky...');
 
-  await agent.post({
-    text: text
-  });
+  await agent.post(postData);
 }
 
 (async () => {
@@ -86,11 +82,29 @@ async function postToBluesky(text) {
     }
 
     const postText =
-`▶️ ${current.artist} - ${current.song}
+`► ${current.artist} - ${current.song}
 
 #nowplaying`;
 
-    await postToBluesky(postText);
+    const hashtagIndex = postText.indexOf('#nowplaying');
+
+    await postToBluesky({
+      text: postText,
+      facets: [
+        {
+          index: {
+            byteStart: hashtagIndex,
+            byteEnd: hashtagIndex + '#nowplaying'.length
+          },
+          features: [
+            {
+              $type: 'app.bsky.richtext.facet#tag',
+              tag: 'nowplaying'
+            }
+          ]
+        }
+      ]
+    });
 
     saveLastPostedTrack(trackString);
 
