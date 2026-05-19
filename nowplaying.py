@@ -1,5 +1,5 @@
 import os
-import requests
+import pylast
 from atproto import Client
 
 BLUESKY_HANDLE = os.environ.get("BLUESKY_HANDLE")
@@ -7,48 +7,23 @@ BLUESKY_PASSWORD = os.environ.get("BLUESKY_PASSWORD")
 LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 def get_lastfm_now_playing():
-    url = "https://audioscrobbler.com"
-    params = {
-        "method": "user.getrecenttracks",
-        "user": LASTFM_USERNAME,
-        "api_key": "53c5f8a23302220c8122fd43313d57b1",
-        "format": "json",
-        "limit": 1
-    }
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    
     try:
-        response = requests.get(url, params=params, headers=headers)
-        data = response.json()
-        print("DEBUG: Connected to Last.fm successfully.")
+        # Using the official pylast tool to handle the connection perfectly
+        network = pylast.LastFMNetwork(
+            api_key="53c5f8a23302220c8122fd43313d57b1"
+        )
+        user = network.get_user(LASTFM_USERNAME)
+        track = user.get_now_playing()
         
-        if 'recenttracks' not in data or 'track' not in data['recenttracks']:
-            print("DEBUG: Could not find tracks in Last.fm data. Check your username secret.")
-            return None
-            
-        tracks = data['recenttracks']['track']
-        
-        # Safely grab the first track item whether Last.fm sends a list or a single item
-        if isinstance(tracks, list):
-            if len(tracks) == 0:
-                print("DEBUG: Tracks list is empty.")
-                return None
-            track = tracks[0]
-        else:
-            track = tracks
-            
-        # Check if this specific track is playing right now
-        if '@attr' in track and track['@attr'].get('nowplaying') == 'true':
-            title = track['name']
-            artist = track['artist']['#text']
+        if track:
+            title = track.title
+            artist = track.artist.name
             return f"▶ Listening to {artist} - {title}\n#nowplaying"
         else:
             print("DEBUG: Last.fm shows you are NOT listening to any music right now.")
             
     except Exception as e:
-        print(f"DEBUG Error analyzing Last.fm response: {e}")
+        print(f"DEBUG Official Last.fm tool error: {e}")
     return None
 
 def get_last_bluesky_post(client):
