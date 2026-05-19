@@ -7,23 +7,21 @@ BLUESKY_PASSWORD = os.environ.get("BLUESKY_PASSWORD")
 LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 def get_lastfm_now_playing():
-    url = "https://ws.audioscrobbler.com/2.0/"
+    url = "https://audioscrobbler.com"
     params = {
         "method": "user.getrecenttracks",
         "user": LASTFM_USERNAME,
-        "api_key": "4a3c10fb659837961b65287f657a82c4",
+        # Put your private API key inside these quotes below:
+        "api_key": "53c5f8a23302220c8122fd43313d57b1",
         "format": "json",
         "limit": 1
     }
-    # An updated, safe signature profile to prevent Last.fm blocking
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     
     try:
         response = requests.get(url, params=params, headers=headers)
-        
-        # Safely handle unreadable web raw responses
         try:
             data = response.json()
         except Exception:
@@ -40,7 +38,7 @@ def get_lastfm_now_playing():
         if isinstance(track_data, list):
             if len(track_data) == 0:
                 return None
-            track = track_data[0]
+            track = track_data[0] # Grab the first song in the list
         else:
             track = track_data
             
