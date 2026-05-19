@@ -1,9 +1,12 @@
-const { BskyAgent } = require('@atproto/api');
+import { BskyAgent } from '@atproto/api';
+import fs from 'fs';
 
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
 const LASTFM_USER = process.env.LASTFM_USER;
 const BSKY_HANDLE = process.env.BSKY_HANDLE;
 const BSKY_PASSWORD = process.env.BSKY_PASSWORD;
+
+const LAST_TRACK_FILE = 'lasttrack.txt';
 
 async function getCurrentTrack() {
   const url =
@@ -22,6 +25,18 @@ async function getCurrentTrack() {
   }
 
   return null;
+}
+
+function getLastPostedTrack() {
+  if (fs.existsSync(LAST_TRACK_FILE)) {
+    return fs.readFileSync(LAST_TRACK_FILE, 'utf8');
+  }
+
+  return '';
+}
+
+function saveLastPostedTrack(track) {
+  fs.writeFileSync(LAST_TRACK_FILE, track);
 }
 
 async function postToBluesky(text) {
@@ -48,9 +63,23 @@ async function postToBluesky(text) {
       return;
     }
 
-    const postText = `Now playing: ${current.song} — ${current.artist}`;
+    const trackString = `${current.artist} - ${current.song}`;
+
+    const lastTrack = getLastPostedTrack();
+
+    if (trackString === lastTrack) {
+      console.log('Duplicate track. Skipping.');
+      return;
+    }
+
+    const postText =
+`▶️ ${current.artist} - ${current.song}
+
+#nowplaying`;
 
     await postToBluesky(postText);
+
+    saveLastPostedTrack(trackString);
 
     console.log('Posted to Bluesky!');
   } catch (err) {
