@@ -11,7 +11,6 @@ def get_lastfm_now_playing():
     params = {
         "method": "user.getrecenttracks",
         "user": LASTFM_USERNAME,
-        # Put your private API key inside these quotes below:
         "api_key": "53c5f8a23302220c8122fd43313d57b1",
         "format": "json",
         "limit": 1
@@ -22,34 +21,34 @@ def get_lastfm_now_playing():
     
     try:
         response = requests.get(url, params=params, headers=headers)
-        try:
-            data = response.json()
-        except Exception:
-            print("DEBUG: Last.fm sent back an empty page. Skipping this 6-minute cycle.")
-            return None
-            
+        data = response.json()
         print("DEBUG: Connected to Last.fm successfully.")
         
         if 'recenttracks' not in data or 'track' not in data['recenttracks']:
-            print("DEBUG: Could not read tracks block. Check your username secret configuration.")
+            print("DEBUG: Could not find tracks in Last.fm data. Check your username secret.")
             return None
             
-        track_data = data['recenttracks']['track']
-        if isinstance(track_data, list):
-            if len(track_data) == 0:
+        tracks = data['recenttracks']['track']
+        
+        # Safely grab the first track item whether Last.fm sends a list or a single item
+        if isinstance(tracks, list):
+            if len(tracks) == 0:
+                print("DEBUG: Tracks list is empty.")
                 return None
-            track = track_data[0] # Grab the first song in the list
+            track = tracks[0]
         else:
-            track = track_data
+            track = tracks
             
+        # Check if this specific track is playing right now
         if '@attr' in track and track['@attr'].get('nowplaying') == 'true':
             title = track['name']
             artist = track['artist']['#text']
             return f"▶ Listening to {artist} - {title}\n#nowplaying"
         else:
             print("DEBUG: Last.fm shows you are NOT listening to any music right now.")
+            
     except Exception as e:
-        print(f"DEBUG Error fetching from Last.fm: {e}")
+        print(f"DEBUG Error analyzing Last.fm response: {e}")
     return None
 
 def get_last_bluesky_post(client):
