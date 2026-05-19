@@ -12,8 +12,17 @@ async function getCurrentTrack() {
   const url =
     `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${LASTFM_USER}&api_key=${LASTFM_API_KEY}&format=json&limit=1`;
 
+  console.log('Checking Last.fm...');
+
   const response = await fetch(url);
   const data = await response.json();
+
+  console.log(JSON.stringify(data, null, 2));
+
+  if (!data.recenttracks || !data.recenttracks.track) {
+    console.log('Last.fm API error.');
+    return null;
+  }
 
   const track = data.recenttracks.track[0];
 
@@ -40,6 +49,8 @@ function saveLastPostedTrack(track) {
 }
 
 async function postToBluesky(text) {
+  console.log('Logging into Bluesky...');
+
   const agent = new BskyAgent({
     service: 'https://bsky.social'
   });
@@ -48,6 +59,8 @@ async function postToBluesky(text) {
     identifier: BSKY_HANDLE,
     password: BSKY_PASSWORD
   });
+
+  console.log('Posting to Bluesky...');
 
   await agent.post({
     text: text
@@ -59,7 +72,7 @@ async function postToBluesky(text) {
     const current = await getCurrentTrack();
 
     if (!current) {
-      console.log('No song playing.');
+      console.log('No song playing or API issue.');
       return;
     }
 
@@ -83,6 +96,6 @@ async function postToBluesky(text) {
 
     console.log('Posted to Bluesky!');
   } catch (err) {
-    console.error(err);
+    console.error('ERROR:', err);
   }
 })();
