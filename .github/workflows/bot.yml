@@ -32,6 +32,9 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add lasttrack.txt
-          git commit -m "Update last played track" || exit 0
-          git push
+
+          if [ -f lasttrack.txt ]; then
+            git add lasttrack.txt
+            git commit -m "Update last played track" || exit 0
+            git push
+          fi
