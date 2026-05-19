@@ -19,7 +19,8 @@ def get_lastfm_now_playing():
         if '@attr' in track and track['@attr'].get('nowplaying') == 'true':
             title = track['name']
             artist = track['artist']['#text']
-            return f"🎵 Now playing: {title} by {artist} #nowplaying"
+            # This creates your exact requested layout without any emojis
+            return f"▶ Listening to {artist} - {title}\n#nowplaying"
     except Exception as e:
         print(f"Error fetching from Last.fm: {e}")
     return None
@@ -57,3 +58,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
