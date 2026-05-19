@@ -7,10 +7,19 @@ BLUESKY_PASSWORD = os.environ.get("BLUESKY_PASSWORD")
 LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 def get_lastfm_now_playing():
-    url = f"https://audioscrobbler.com{LASTFM_USERNAME}&api_key=4a3c10fb659837961b65287f657a82c4&format=json&limit=1"
+    # Built-in structured parameters to prevent URL parsing errors
+    url = "https://audioscrobbler.com"
+    params = {
+        "method": "user.getrecenttracks",
+        "user": LASTFM_USERNAME,
+        "api_key": "4a3c10fb659837961b65287f657a82c4",
+        "format": "json",
+        "limit": 1
+    }
+    
     try:
-        response = requests.get(url).json()
-        print(f"DEBUG: Successfully connected to Last.fm for user: {LASTFM_USERNAME}")
+        response = requests.get(url, params=params).json()
+        print(f"DEBUG: Connected to Last.fm successfully.")
         
         track_data = response['recenttracks']['track']
         if isinstance(track_data, list):
@@ -45,7 +54,7 @@ def main():
         print("Bot is stopping because no active track was found.")
         return
 
-    print(f"DEBUG: Active track found! Prepared text: {current_track_text}")
+    print(f"DEBUG: Active track found! Prepared text:\n{current_track_text}")
     client = Client()
     client.login(BLUESKY_HANDLE, BLUESKY_PASSWORD)
     print("DEBUG: Logged into Bluesky successfully.")
@@ -57,7 +66,7 @@ def main():
 
     try:
         client.send_post(text=current_track_text)
-        print(f"SUCCESS: Posted to Bluesky: {current_track_text}")
+        print(f"SUCCESS: Posted to Bluesky!")
     except Exception as e:
         print(f"DEBUG Error posting to Bluesky: {e}")
 
