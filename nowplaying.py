@@ -1,5 +1,14 @@
 import os
-import pylast
+import subprocess
+import sys
+
+# Force GitHub to install the tool directly inside the script
+try:
+    import pylast
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pylast"])
+    import pylast
+
 from atproto import Client
 
 BLUESKY_HANDLE = os.environ.get("BLUESKY_HANDLE")
@@ -8,7 +17,6 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 def get_lastfm_now_playing():
     try:
-        # Using the official pylast tool to handle the connection perfectly
         network = pylast.LastFMNetwork(
             api_key="53c5f8a23302220c8122fd43313d57b1"
         )
