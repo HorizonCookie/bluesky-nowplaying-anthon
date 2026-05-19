@@ -83,14 +83,12 @@ async function postToBluesky(postData) {
 
     const postText =
 `► ${current.artist} - ${current.song}
-
 #nowplaying`;
 
     const encoder = new TextEncoder();
 
     const beforeTag =
 `► ${current.artist} - ${current.song}
-
 `;
 
     const byteStart = encoder.encode(beforeTag).length;
