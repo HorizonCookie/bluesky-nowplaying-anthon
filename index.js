@@ -86,25 +86,25 @@ async function postToBluesky(postData) {
 
 #nowplaying`;
 
-    const hashtagIndex = postText.indexOf('#nowplaying');
-
     await postToBluesky({
-      text: postText,
-      facets: [
+  text: `► ${current.artist} - ${current.song}
+
+#nowplaying`,
+  facets: [
+    {
+      index: {
+        byteStart: (`► ${current.artist} - ${current.song}\n\n`).length,
+        byteEnd: (`► ${current.artist} - ${current.song}\n\n#nowplaying`).length
+      },
+      features: [
         {
-          index: {
-            byteStart: hashtagIndex,
-            byteEnd: hashtagIndex + '#nowplaying'.length
-          },
-          features: [
-            {
-              $type: 'app.bsky.richtext.facet#tag',
-              tag: 'nowplaying'
-            }
-          ]
+          $type: 'app.bsky.richtext.facet#tag',
+          tag: 'nowplaying'
         }
       ]
-    });
+    }
+  ]
+});
 
     saveLastPostedTrack(trackString);
 
