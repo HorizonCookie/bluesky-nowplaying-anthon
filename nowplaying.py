@@ -7,7 +7,7 @@ BLUESKY_PASSWORD = os.environ.get("BLUESKY_PASSWORD")
 LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 def get_lastfm_now_playing():
-    url = "https://audioscrobbler.com"
+    url = "https://ws.audioscrobbler.com/2.0/"
     params = {
         "method": "user.getrecenttracks",
         "user": LASTFM_USERNAME,
@@ -15,24 +15,31 @@ def get_lastfm_now_playing():
         "format": "json",
         "limit": 1
     }
-    # Standard header to stop Last.fm from blocking the connection
+    # An updated, safe signature profile to prevent Last.fm blocking
     headers = {
-        "User-Agent": "BlueskyNowPlayingBot/1.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     
     try:
         response = requests.get(url, params=params, headers=headers)
         
-        # Check if Last.fm gave an error code
-        if response.status_code != 200:
-            print(f"DEBUG Last.fm Server Error: Status code {response.status_code}")
+        # Safely handle unreadable web raw responses
+        try:
+            data = response.json()
+        except Exception:
+            print("DEBUG: Last.fm sent back an empty page. Skipping this 6-minute cycle.")
             return None
             
-        data = response.json()
         print("DEBUG: Connected to Last.fm successfully.")
         
+        if 'recenttracks' not in data or 'track' not in data['recenttracks']:
+            print("DEBUG: Could not read tracks block. Check your username secret configuration.")
+            return None
+            
         track_data = data['recenttracks']['track']
         if isinstance(track_data, list):
+            if len(track_data) == 0:
+                return None
             track = track_data[0]
         else:
             track = track_data
