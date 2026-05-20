@@ -1,8 +1,6 @@
 name: LastFM Bluesky Bot
 
 on:
-  schedule:
-    - cron: "*/6 * * * *"
   workflow_dispatch:
 
 jobs:
